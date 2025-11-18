@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reports - PG Management</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script>
+        if (window.supabaseClient && window.supabaseClient.init) {
+            window.supabaseClient.init();
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-building"></i>
+            <span>PG Management</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="guest-form.html"><i class="fas fa-user-plus"></i> Add Guest</a></li>
+            <li><a href="guest-list.html"><i class="fas fa-list"></i> Guest List</a></li>
+            <li><a href="room-status.html"><i class="fas fa-door-open"></i> Room Status</a></li>
+            <li><a href="reports.html" class="active"><i class="fas fa-file-alt"></i> Reports</a></li>
+            <li><a href="storage.html"><i class="fas fa-database"></i> Storage</a></li>
+            <li><a href="admin-profile.html"><i class="fas fa-user-cog"></i> Admin Profile</a></li>
+        </ul>
+        <button class="btn btn-logout" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-file-alt"></i> Reports</h1>
+            <p>Monthly reports and analytics</p>
+        </div>
+
+        <div class="reports-grid">
+            <div class="reports-card">
+                <label for="month">Select Month:</label>
+                <input type="month" id="month" name="month" />
+            </div>
+
+            <div class="reports-card">
+                <label for="building">Building:</label>
+                <select id="building" name="building">
+                    <option value="">All Buildings</option>
+                    <!-- dynamically filled by JS -->
+                </select>
+            </div>
+
+            <div class="reports-card" style="align-self:center;">
+                <button class="btn btn-primary" id="exportPdf">Export PDF</button>
+            </div>
+
+            <div class="section-card">
+                <h2>Summary for Selected Month</h2>
+                <p><strong>Total Guests:</strong> <span id="totalGuests">0</span></p>
+                <p><strong>Paid:</strong> <span id="totalPaid">0</span></p>
+                <p><strong>Pending:</strong> <span id="totalPending">0</span></p>
+                <p><strong>Breached:</strong> <span id="totalBreached">0</span></p>
+            </div>
+
+            <div class="reports-card" style="grid-column: 1 / -1;">
+                <h3>Detailed Guest List</h3>
+                <div id="guestListReport">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/reports.js"></script>
+</body>
+</html>
