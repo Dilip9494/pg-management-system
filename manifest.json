@@ -1,6 +1,6 @@
 {
   "name": "PG Management System",
-  "short_name": "PG Manager",
+  "short_name": "StaySafeHome",
   "description": "Manage PG guest data easily and efficiently",
   "start_url": "/index.html",
   "display": "standalone",
@@ -22,3 +22,4 @@
     }
   ]
 }
+
