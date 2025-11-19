@@ -2,10 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#667eea" />
+
     <title>Reports - PG Management</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="assets/icon-192.png" />
+
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
@@ -14,6 +26,94 @@
             window.supabaseClient.init();
         }
     </script>
+
+    <style>
+        /* Reports page grid */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .reports-card {
+            background: var(--card-bg, #fff);
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+        }
+        .reports-card label {
+            width: 100%;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .reports-card input[type="month"], .reports-card select, .reports-card button {
+            width: 100%;
+            padding: 8px 14px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            transition: border-color 0.3s ease;
+            cursor: pointer;
+        }
+        .reports-card input[type="month"]:focus, .reports-card select:focus, .reports-card button:hover {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-1));
+            color: white;
+            border: none;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .section-card {
+            background: var(--card-bg, #fff);
+            border-radius: 16px;
+            box-shadow: 0 3px 16px rgba(102,126,234,0.07);
+            padding: 24px 28px 20px 28px;
+        }
+        .section-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-card p {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin: 8px 0;
+        }
+        #guestListReport {
+            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        /* Responsive for small devices */
+        @media (max-width: 600px) {
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-card p {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -76,5 +176,16 @@
 
     <script src="js/auth.js"></script>
     <script src="js/reports.js"></script>
+    
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

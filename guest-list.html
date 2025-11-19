@@ -2,10 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#667eea" />
+    
     <title>Guest List - PG Management</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="assets/icon-192.png" />
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
@@ -14,6 +28,59 @@
             window.supabaseClient.init();
         }
     </script>
+    
+    <style>
+        /* Mobile-friendly filters */
+        .guest-list-actions {
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        .guest-list-actions label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .guest-list-actions select,
+        .guest-list-actions input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Mobile table optimizations */
+        @media (max-width: 768px) {
+            .guest-list-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .guest-list-actions label {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .guest-list-actions select,
+            .guest-list-actions input {
+                width: 100%;
+            }
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .guest-table {
+                font-size: 0.85rem;
+            }
+            .guest-table th,
+            .guest-table td {
+                padding: 8px 6px;
+                white-space: nowrap;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -34,13 +101,17 @@
             <i class="fas fa-sign-out-alt"></i> Logout
         </button>
     </nav>
+    
     <div class="container">
         <div class="page-header">
             <h1><i class="fas fa-list"></i> Guest List</h1>
             <p>Manage all paying guests information</p>
         </div>
-        <div class="guest-list-actions" style="margin-bottom:22px;display:flex;align-items:center;gap:18px;">
-            <button class="btn btn-primary" onclick="window.location.href='guest-form.html'"><i class="fas fa-plus"></i> Add New Guest</button>
+        
+        <div class="guest-list-actions">
+            <button class="btn btn-primary" onclick="window.location.href='guest-form.html'">
+                <i class="fas fa-plus"></i> Add New Guest
+            </button>
             <label>
                 Filter by Building:
                 <select id="buildingFilter" onchange="filterGuests()">
@@ -54,6 +125,7 @@
                 <input type="text" id="searchInput" placeholder="Search by name, mobile..." oninput="filterGuests()">
             </label>
         </div>
+        
         <div class="table-responsive">
           <table class="guest-table">
             <thead>
@@ -82,7 +154,19 @@
           </table>
         </div>
     </div>
+    
     <script src="js/auth.js"></script>
     <script src="js/guest-list.js"></script>
+    
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

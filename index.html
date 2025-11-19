@@ -2,19 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    
     <title>PG Management - Login</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-	<script src="js/config.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
-	<script>
-	// THIS LINE ensures supabase is initialized before any query!
-	if (window.supabaseClient && window.supabaseClient.init) {
-    window.supabaseClient.init();
-	}
-	</script>
+    <script>
+        // Initialize Supabase before any query
+        if (window.supabaseClient && window.supabaseClient.init) {
+            window.supabaseClient.init();
+        }
+    </script>
+    
+    <style>
+        /* Mobile optimizations for login page */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 16px;
+            }
+            .login-card {
+                padding: 24px 20px;
+            }
+            .icon-large {
+                font-size: 48px;
+            }
+            .login-header h1 {
+                font-size: 22px;
+            }
+            .login-header p {
+                font-size: 13px;
+            }
+            .admin-credentials {
+                font-size: 0.85rem;
+            }
+            .credential-item {
+                padding: 8px;
+            }
+        }
+        
+        /* Touch-friendly inputs */
+        input[type="text"],
+        input[type="password"] {
+            -webkit-tap-highlight-color: transparent;
+            min-height: 44px;
+        }
+        
+        button {
+            -webkit-tap-highlight-color: transparent;
+            min-height: 44px;
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="login-container">
@@ -67,5 +120,16 @@
     </div>
 
     <script src="js/auth.js"></script>
+    
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
