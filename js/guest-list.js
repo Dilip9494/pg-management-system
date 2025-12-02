@@ -5,10 +5,60 @@
 let allGuests = [];
 let filteredGuests = [];
 
+// Read status filter from URL (?status=Paid / Pending / Breached / all)
+function getUrlStatusFilter() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('status'); // returns string or null
+}
+
+// Automatically set overdue payments to "Breached" using Days Left logic
+async function autoUpdateBreachedStatus(guests) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const guest of guests) {
+        if (!guest.upcomingPaymentDueDate) continue;
+
+        const status = guest.monthlyPaymentStatus || '';
+        const dueDate = new Date(guest.upcomingPaymentDueDate);
+        if (isNaN(dueDate)) continue; // invalid date, skip
+        dueDate.setHours(0, 0, 0, 0);
+
+        const diffTime = dueDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) {
+            // OVERDUE branch
+            if (status === 'Breached') {
+                // Already breached – leave as is
+                continue;
+            } else {
+                // Any other status (Paid / Pending / etc.) → auto-mark as Breached
+                guest.monthlyPaymentStatus = 'Breached';
+
+                try {
+                    await DB.updateGuest(guest.id, {
+                        monthlyPaymentStatus: 'Breached'
+                    });
+                } catch (err) {
+                    console.error('Failed to update status to Breached for', guest.id, err);
+                }
+            }
+        } else {
+            // NOT OVERDUE (today or future) – never change status automatically
+            continue;
+        }
+    }
+}
+
 // Load all guests
 async function loadGuests() {
     try {
         allGuests = await DB.getGuests();
+
+        // Auto-update overdue records to Breached before rendering
+        await autoUpdateBreachedStatus(allGuests);
+
         filteredGuests = [...allGuests];
         renderGuestTable();
     } catch (error) {
@@ -25,6 +75,7 @@ async function loadGuests() {
 function formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
+    if (isNaN(date)) return '';
     return date.toLocaleDateString('en-IN');
 }
 
@@ -34,6 +85,7 @@ function calculateDaysLeft(upcomingDueDate) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(upcomingDueDate);
+    if (isNaN(dueDate)) return 'N/A';
     dueDate.setHours(0, 0, 0, 0);
     const diffTime = dueDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -55,9 +107,10 @@ function renderGuestTable() {
     }
     let html = '';
     filteredGuests.forEach((guest, index) => {
+        const status = guest.monthlyPaymentStatus || '';
         const statusClass =
-            guest.monthlyPaymentStatus === 'Paid' ? 'paid' :
-            guest.monthlyPaymentStatus === 'Breached' ? 'breached' : 'pending';
+            status === 'Paid' ? 'paid' :
+            status === 'Breached' ? 'breached' : 'pending';
 
         html += `
             <tr>
@@ -72,7 +125,7 @@ function renderGuestTable() {
                 <td>₹${guest.paymentAmount}</td>
                 <td>
                   <span class="status-badge status-${statusClass}">
-                    ${guest.monthlyPaymentStatus}
+                    ${status}
                   </span>
                 </td>
                 <td>${guest.monthlyPaymentDate ? formatDate(guest.monthlyPaymentDate) : ''}</td>
@@ -94,19 +147,44 @@ function renderGuestTable() {
     tbody.innerHTML = html;
 }
 
-// Filter guests by building or search term
+// Filter guests by building or search term (name, mobile, room, status, due label)
 function filterGuests() {
     const buildingFilterElem = document.getElementById('buildingFilter');
     const buildingFilter = buildingFilterElem ? buildingFilterElem.value : '';
     const searchInput = document.getElementById('searchInput');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     filteredGuests = allGuests.filter(guest => {
         const matchesBuilding = !buildingFilter || guest.building === buildingFilter;
-        const matchesSearch = !searchTerm ||
-            guest.name.toLowerCase().includes(searchTerm) ||
-            guest.mobile.includes(searchTerm) ||
-            guest.roomNo.toLowerCase().includes(searchTerm);
+
+        const status = (guest.monthlyPaymentStatus || '').toLowerCase();
+        const name = (guest.name || '').toLowerCase();
+        const roomNo = (guest.roomNo || '').toLowerCase();
+        const mobile = guest.mobile || '';
+
+        // New: label based on due date
+        const dueLabel = (() => {
+            if (!guest.upcomingPaymentDueDate) return '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(guest.upcomingPaymentDueDate);
+            if (isNaN(due)) return '';
+            due.setHours(0, 0, 0, 0);
+            const diff = due - today;
+            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            if (days < 0) return 'overdue';
+            if (days === 0) return 'due today';
+            return 'future';
+        })();
+
+        const matchesSearch =
+            !searchTerm ||
+            name.includes(searchTerm) ||
+            mobile.includes(searchTerm) ||
+            roomNo.includes(searchTerm) ||
+            status.includes(searchTerm) ||
+            dueLabel.includes(searchTerm);
+
         return matchesBuilding && matchesSearch;
     });
 
@@ -143,14 +221,28 @@ window.deleteGuest = deleteGuest;
 
 // Bind events and load
 document.addEventListener('DOMContentLoaded', () => {
-    // Bind filter and search events
     const filterElem = document.getElementById('buildingFilter');
     if (filterElem) filterElem.onchange = filterGuests;
     const searchElem = document.getElementById('searchInput');
     if (searchElem) searchElem.oninput = filterGuests;
 
-    setTimeout(loadGuests, 500);
+    const preStatus = getUrlStatusFilter(); // from dashboard links
+
+    setTimeout(async () => {
+        await loadGuests();
+
+        if (preStatus && preStatus !== 'all' && searchElem) {
+            searchElem.value = preStatus.toLowerCase(); // 'paid','pending','breached'
+            filterGuests();
+        }
+    }, 500);
 });
 
-// Auto-refresh every 30 seconds
-setInterval(loadGuests, 30000);
+// Auto-refresh every 60 seconds
+setInterval(async () => {
+    await loadGuests();
+    const searchElem = document.getElementById('searchInput');
+    if (searchElem && searchElem.value.trim()) {
+        filterGuests(); // re-apply current filters after reload
+    }
+}, 60000);

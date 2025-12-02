@@ -125,6 +125,24 @@ const DB = {
         }
     },
 
+    // Update only payment status (used for auto Breached)
+    async updateGuestStatus(id, status) {
+        if (!checkClient()) return { success: false, error: "Client not initialized" };
+
+        try {
+            const { error } = await supabase
+                .from("guests")
+                .update({ monthlyPaymentStatus: status })
+                .eq("id", id);
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error("❌ Error updating guest status:", error);
+            return { success: false, error: error.message };
+        }
+    },
+
     // Delete guest
     async deleteGuest(id) {
         if (!checkClient()) return { success: false, error: "Client not initialized" };
@@ -187,24 +205,41 @@ const DB = {
         }
     },
 
-    // Get login history
-    async getLoginHistory() {
-        if (!checkClient()) return [];
+// Get login history (keep only latest 5)
+async getLoginHistory() {
+    if (!checkClient()) return [];
 
-        try {
-            const { data, error } = await supabase
+    try {
+        // 1) Fetch all history, newest first
+        const { data, error } = await supabase
+            .from("login_history")
+            .select("*")
+            .order("login_time", { ascending: false });
+
+        if (error) throw error;
+
+        const all = data || [];
+
+        // 2) If more than 5, delete the older ones
+        if (all.length > 5) {
+            const toDeleteIds = all.slice(5).map(row => row.id);
+            const { error: delError } = await supabase
                 .from("login_history")
-                .select("*")
-                .order("login_time", { ascending: false })
-                .limit(50);
+                .delete()
+                .in("id", toDeleteIds);
 
-            if (error) throw error;
-            return data || [];
-        } catch (error) {
-            console.error("❌ Error fetching login history:", error);
-            return [];
+            if (delError) {
+                console.error("❌ Error pruning old login history:", delError);
+            }
         }
-    },
+
+        // 3) Return latest 5 to UI
+        return all.slice(0, 5);
+    } catch (error) {
+        console.error("❌ Error fetching login history:", error);
+        return [];
+    }
+},
 
     // Save backup
     async saveBackup(backupData) {
@@ -232,24 +267,41 @@ const DB = {
         }
     },
 
-    // Get backups
-    async getBackups() {
-        if (!checkClient()) return [];
+   // Get backups (keep only latest 1)
+async getBackups() {
+    if (!checkClient()) return [];
 
-        try {
-            const { data, error } = await supabase
+    try {
+        // 1) Fetch all backups, newest first
+        const { data, error } = await supabase
+            .from("backups")
+            .select("*")
+            .order("backup_date", { ascending: false });
+
+        if (error) throw error;
+
+        const all = data || [];
+
+        // 2) If more than 1, delete the older ones
+        if (all.length > 1) {
+            const toDeleteIds = all.slice(1).map(row => row.id);
+            const { error: delError } = await supabase
                 .from("backups")
-                .select("*")
-                .order("backup_date", { ascending: false });
+                .delete()
+                .in("id", toDeleteIds);
 
-            if (error) throw error;
-
-            return data || [];
-        } catch (error) {
-            console.error("❌ Error fetching backups:", error);
-            return [];
+            if (delError) {
+                console.error("❌ Error pruning old backups:", delError);
+            }
         }
+
+        // 3) Return latest 1 to UI
+        return all.slice(0, 1);
+    } catch (error) {
+        console.error("❌ Error fetching backups:", error);
+        return [];
     }
+}
 };
 
 // Expose globally
