@@ -200,28 +200,28 @@
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card stat-primary">
+            <div class="stat-card stat-primary" onclick="openGuestList('all')">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
                 <div>
                   <div class="stat-number" id="totalGuests">0</div>
                   <div class="stat-label">Total Guests</div>
                 </div>
             </div>
-            <div class="stat-card stat-success">
+            <div class="stat-card stat-success" onclick="openGuestList('Paid')">
                 <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                 <div>
                   <div class="stat-number" id="totalPaid">0</div>
                   <div class="stat-label">Paid This Month</div>
                 </div>
             </div>
-            <div class="stat-card stat-warning">
+            <div class="stat-card stat-warning" onclick="openGuestList('Pending')">
                 <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div>
                   <div class="stat-number" id="totalPending">0</div>
                   <div class="stat-label">Pending Payments</div>
                 </div>
             </div>
-            <div class="stat-card stat-danger">
+            <div class="stat-card stat-danger" onclick="openGuestList('Breached')">
                 <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <div>
                   <div class="stat-number" id="totalBreached">0</div>
@@ -270,6 +270,13 @@
     
     <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
+
+    <script>
+      function openGuestList(filter) {
+        // filter: 'all', 'Paid', 'Pending', 'Breached'
+        window.location.href = 'guest-list.html?status=' + encodeURIComponent(filter);
+      }
+    </script>
     
     <!-- Service Worker Registration for PWA -->
     <script>
