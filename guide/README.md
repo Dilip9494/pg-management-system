@@ -103,31 +103,32 @@ See **SETUP_GUIDE.md** for detailed deployment instructions.
 ## 📁 Project Structure
 
 ```
-pg-management-system/
-├── index.html              # Login page
-├── dashboard.html          # Dashboard with statistics
-├── guest-form.html         # Add/Edit guest form
-├── guest-list.html         # Complete guest listing
-├── room-status.html        # Visual room occupancy
-├── reports.html            # Monthly reports
-├── storage.html            # Backup & restore
-├── admin-profile.html      # Admin information
-├── netlify.toml           # Netlify configuration
-├── README.md              # This file
-├── SETUP_GUIDE.md         # Detailed setup instructions
+project-root/
+├── index.html # Login page
+├── dashboard.html # Main dashboard
+├── guest-form.html # Add/Edit guest form
+├── guest-list.html # Guest list with filters
+├── room-status.html # Room occupancy view
+├── reports.html # Monthly reports
+├── storage.html # Backup & restore
+├── admin-profile.html # Admin management
+├── manifest.json # PWA manifest
+├── service-worker.js # Service worker for offline support
 ├── css/
-│   └── style.css          # Complete styling with animations
+│ └── style.css # Main stylesheet
 ├── js/
-│   ├── config.js          # Configuration file
-│   ├── supabase-client.js # Supabase integration
-│   ├── auth.js            # Authentication logic
-│   ├── dashboard.js       # Dashboard functionality
-│   ├── guest-form.js      # Form handling
-│   ├── guest-list.js      # Guest listing
-│   ├── room-status.js     # Room management
-│   ├── reports.js         # Report generation
-│   ├── storage.js         # Backup operations
-│   └── admin-profile.js   # Admin management
+│ ├── auth.js # Authentication logic
+│ ├── config.js # Configuration
+│ ├── supabase-client.js # Database client
+│ ├── dashboard.js # Dashboard logic
+│ ├── guest-form.js # Form handling
+│ ├── guest-list.js # List management
+│ ├── room-status.js # Room tracking
+│ ├── reports.js # Report generation
+│ └── storage.js # Backup/restore
+└── assets/
+├── icon-192.png # App icon (192x192)
+└── icon-512.png # App icon (512x512)
 
 ```
 
